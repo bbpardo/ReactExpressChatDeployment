@@ -115,7 +115,7 @@ app.post('/message/', authMiddleware, (request, response) => {
 });
 
 app.get('/messages/', authMiddleware, (request, response) => {
-    getLastMessages(1, (error, data)=>{
+    getLastMessages(15, (error, data)=>{
         if ( error ) {
             console.error(error);
             response.status(500)
