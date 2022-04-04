@@ -43,32 +43,38 @@ function decodeBasicToken(request) {
 }
 
 function authMiddleware (request, response, next) {
-    if ( ! request.headers.authorization ) {
-        response.status(401);
-        response.send(`Authentication requiered.`);
-        return
-    } else {
-        const [ authType, b64token ] = request.headers.authorization.split(" ",2);
-        if ( authType !== "Basic") {
-            response.status(400);
-            response.send(`Ùnknown authentication type: ${authType}`);
+    try {
+        if ( ! request.headers.authorization ) {
+            response.status(401);
+            response.send(`Authentication requiered.`);
             return
-        }
-        const [ source, password ] = decodeBasicToken(request);
-        findSource(source, password, (error, data)=>{
-            if (error) {
-                console.error(error)
-                throw error;
-            }
-            if ( data ) {
-                next();
-            } else {
-                response.status(401);
-                response.send('Unauthorized');
+        } else {
+            const [ authType, b64token ] = request.headers.authorization.split(" ",2);
+            if ( authType !== "Basic") {
+                response.status(400);
+                response.send(`Ùnknown authentication type: ${authType}`);
                 return
             }
-        });
-    };
+            const [ source, password ] = decodeBasicToken(request);
+            findSource(source, password, (error, data)=>{
+                if (error) {
+                    console.error(error)
+                    throw error;
+                }
+                if ( data ) {
+                    next();
+                } else {
+                    response.status(401);
+                    response.send('Unauthorized');
+                    return
+                }
+            });
+        };
+    } catch (err) {
+        response.status(500)
+        response.send(err)
+        return
+    }
 }
 
 app.post('/login/', (request, response) => {
