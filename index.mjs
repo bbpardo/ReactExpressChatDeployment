@@ -46,11 +46,13 @@ function authMiddleware (request, response, next) {
     if ( ! request.headers.authorization ) {
         response.status(401);
         response.send(`Authentication requiered.`);
+        return
     } else {
         const [ authType, b64token ] = request.headers.authorization.split(" ",2);
         if ( authType !== "Basic") {
             response.status(400);
             response.send(`Ùnknown authentication type: ${authType}`);
+            return
         }
         const [ source, password ] = decodeBasicToken(request);
         findSource(source, password, (error, data)=>{
@@ -62,7 +64,8 @@ function authMiddleware (request, response, next) {
                 next();
             } else {
                 response.status(401);
-                response.json('Unauthorized');
+                response.send('Unauthorized');
+                return
             }
         });
     };
